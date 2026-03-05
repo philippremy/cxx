@@ -80,15 +80,15 @@ pub(super) fn write(out: &mut OutFile) {
             // Split until the first /
             let env_key = include
                 .path
-                .split_once("/")
+                .split_once('/')
                 .map(|(env, _)| env)
                 .unwrap_or(&include.path);
             let path_rest = include
                 .path
-                .split_once("/")
+                .split_once('/')
                 .map(|(_, rest)| rest)
                 .unwrap_or("");
-            let env_val = std::env::var(env_key).expect(&format!(
+            let env_val = std::env::var(env_key.strip_prefix('$').unwrap()).expect(&format!(
                 "Expanding the environment variable {} failed: Not present.",
                 env_key
             ));
