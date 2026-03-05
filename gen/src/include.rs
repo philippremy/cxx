@@ -73,12 +73,36 @@ pub(super) fn write(out: &mut OutFile) {
     }
 
     for include in &include.custom {
+        // Expand any environment variables in the path
+        // Identified by a leading $ at the beginning
+        let path_expanded;
+        if include.path.starts_with("$") {
+            // Split until the first /
+            let env_key = include
+                .path
+                .split_once("/")
+                .map(|(env, _)| env)
+                .unwrap_or(&include.path);
+            let path_rest = include
+                .path
+                .split_once("/")
+                .map(|(_, rest)| rest)
+                .unwrap_or("");
+            let env_val = std::env::var(env_key).expect(&format!(
+                "Expanding the environment variable {} failed: Not present.",
+                env_key
+            ));
+            path_expanded = format!("{env_val}/{path_rest}");
+        } else {
+            path_expanded = include.path.clone();
+        }
+
         match include.kind {
             IncludeKind::Quoted => {
-                writeln!(out, "#include \"{}\"", include.path.escape_default());
+                writeln!(out, "#include \"{}\"", path_expanded.escape_default());
             }
             IncludeKind::Bracketed => {
-                writeln!(out, "#include <{}>", include.path);
+                writeln!(out, "#include <{}>", path_expanded);
             }
         }
     }
