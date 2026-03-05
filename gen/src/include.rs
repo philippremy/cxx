@@ -89,8 +89,8 @@ pub(super) fn write(out: &mut OutFile) {
                 .map(|(_, rest)| rest)
                 .unwrap_or("");
             let env_val = std::env::var(env_key.strip_prefix('$').unwrap()).expect(&format!(
-                "Expanding the environment variable {} failed: Not present.",
-                env_key
+                "Expanding the environment variable {} failed, the variable is not present",
+                env_key.strip_prefix('$').unwrap()
             ));
             path_expanded = format!("{env_val}/{path_rest}");
         } else {
